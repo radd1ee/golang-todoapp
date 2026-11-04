@@ -1,15 +1,15 @@
 include .env
 
 env-up:
-	@docker-compose up -d todoapp-postgres
+	@docker compose up -d todoapp-postgres
 
 env-down:
-	@docker-compose down
+	@docker compose down
 
 env-cleanup:
 	@read -p "Очистить все volume файлы окружения? Опасность утери данныхю [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker-compose down todoapp-postgres && \
+		docker compose down todoapp-postgres && \
 		rm -rf out/pgdata &&\
 		echo "Файлы окружения очищены"; \
 	else \
@@ -21,17 +21,17 @@ migrate-create:
 		echo "Отсутствует необходимый параметр seq. Пример: make migrate-create seq=init"; \
 		exit 1; \
 	fi; \
-	docker-compose run --rm todoapp-postgres-migrate \
+	docker compose run --rm todoapp-postgres-migrate \
 		create \
 		-ext sql \
 		-dir ./migrations \
 		-seq "$(seq)"
 
 env-port-forward:
-	@docker-compose up -d port-forwarder
+	@docker compose up -d port-forwarder
 
 env-port-close:
-	@docker-compose down port-forwarder
+	@docker compose down port-forwarder
 
 migrate-up:
 	@make migrate-action action=up
@@ -44,7 +44,10 @@ migrate-action:
 		echo "Отсутствует необходимый параметр action. Пример: make migrate-action action=up"; \
 		exit 1; \
 	fi; \
-	docker-compose run --rm todoapp-postgres-migrate \
+	docker compose run --rm todoapp-postgres-migrate \
 		-path ./migrations \
 		-database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@todoapp-postgres:5432/${POSTGRES_DB}?sslmode=disable" \
 		"${action}"
+
+todoapp-run:
+	@go run cmd/todoapp/main.go
